@@ -86,7 +86,7 @@ class DTFactory:
         """
         return {
             'AggregationService': 'src.services.analytics',
-            # Aggiungere qui altri servizi secondo necessità
+            'TemperaturePredictionService':'src.services.TemperaturePredictionService'
         }
 
     def add_service(self, dt_id: str, service_name: str, service_config: Dict = None) -> None:

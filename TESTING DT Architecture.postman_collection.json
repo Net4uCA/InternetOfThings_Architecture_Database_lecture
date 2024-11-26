@@ -1,0 +1,246 @@
+{
+	"info": {
+		"_postman_id": "b14af873-f7ac-4cd2-926d-ac46ad374a2d",
+		"name": "TESTING DT Architecture",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "14929618"
+	},
+	"item": [
+		{
+			"name": "Digital twins",
+			"item": [
+				{
+					"name": "dt_creation",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"GENERIC DIGITAL TWIN\",\r\n    \"description\": \"Digital Twin of something\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:5000/api/dt/"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Winery",
+			"item": [
+				{
+					"name": "DigitalReplicas",
+					"item": [
+						{
+							"name": "addbottle",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"profile\": {\r\n    \"name\": \"Barolo Riserva 20181\",\r\n    \"description\": \"Barolo DOCG Riserva annata 2018\", \r\n    \"producer\": \"Cantina Example\",\r\n    \"rfid_tag\": \"q123qed\"\r\n  },\r\n  \"privacy_level\": \"private\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/winery/bottles"
+							},
+							"response": []
+						},
+						{
+							"name": "getbottles",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:5000/api/winery/bottles"
+							},
+							"response": []
+						},
+						{
+							"name": "getbottle",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:5000/api/winery/bottles/2613a0ec-507c-4b8a-8cb9-76ac92030a11"
+							},
+							"response": []
+						},
+						{
+							"name": "NewRoom",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profile\": {\r\n        \"name\": \"Room Cannonau\",\r\n        \"description\": \"main Cannonau Room\",\r\n        \"room_number\": \"A101\",\r\n        \"floor\": 0\r\n    },\r\n    \"data\": {\r\n        \"status\": \"active\",\r\n        \"bottles\": [],\r\n        \"measurements\": [\r\n            {\r\n                \"measure_type\": \"temperature\",\r\n                \"value\": 15.5,\r\n                \"timestamp\": \"2024-11-26T10:00:00\"\r\n            },\r\n            {\r\n                \"measure_type\": \"humidity\",\r\n                \"value\": 75.0,\r\n                \"timestamp\": \"2024-11-26T10:00:00\"\r\n            }\r\n        ]\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/winery/rooms"
+							},
+							"response": []
+						},
+						{
+							"name": "getRoom",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": "http://localhost:5000/api/winery/rooms/5d079a6b-52da-4e1c-9567-be1c6552b3cc"
+							},
+							"response": []
+						},
+						{
+							"name": "getRoomS",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/winery/rooms"
+							},
+							"response": []
+						},
+						{
+							"name": "updateRoom",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"profile\": {\r\n        \"name\": \"Cantina Barolo Premium\",\r\n        \"description\": \"main room for Barolo\"\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/winery/rooms/5d079a6b-52da-4e1c-9567-be1c6552b3cc"
+							},
+							"response": []
+						},
+						{
+							"name": "NewMeasure",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"measure_type\": \"temperature\",\r\n    \"value\": 16.2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/winery/rooms/90a16754-604e-47e0-ad89-56c488c790fd/measurements"
+							},
+							"response": []
+						},
+						{
+							"name": "ReadRFID",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"measure_type\": \"rfid\",\r\n    \"value\": \"111111\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/winery/rooms/90a16754-604e-47e0-ad89-56c488c790fd/measurements"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "DT",
+					"item": [
+						{
+							"name": "NewDT",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"name\": \"Cantina Barolo DT\",\r\n    \"description\": \"Digital Twin for managing the Barolo wine cellar\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/dt"
+							},
+							"response": []
+						},
+						{
+							"name": "AssignRoomToDT",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"dr_type\": \"room\",\r\n    \"dr_id\": \"10e53f0b-f6ac-4512-9e8e-64d9b9061b18\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/dt-management/assign/6745be245cdc490b92f8e86f"
+							},
+							"response": []
+						},
+						{
+							"name": "AssignBottleToDT Copy",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"dr_type\": \"bottle\",\r\n    \"dr_id\": \"50cd24b6-c08e-46b9-85f5-5d4381dc28d3\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "http://localhost:5000/api/dt-management/assign/6745be245cdc490b92f8e86f"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

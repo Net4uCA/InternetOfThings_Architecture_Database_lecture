@@ -1,0 +1,21 @@
+schemas:
+  common_fields:
+    id: str
+    type: str  # "bottle"
+    profile:
+      name: str
+      description: str
+      rfid_tag: str
+    metadata:
+      created_at: datetime
+      updated_at: datetime
+      privacy_level: str
+
+  entity:
+    data:
+      status: str
+      room_id: str
+      optimal_temperature: float
+      measurements: List[Dict]
+      properties: Dict
+      relations: Dict

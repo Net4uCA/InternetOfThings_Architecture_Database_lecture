@@ -1,0 +1,22 @@
+schemas:
+  common_fields:
+    id: str
+    type: str  # "room"
+    profile:
+      name: str
+      description: str
+      room_number: str
+      floor: int
+    metadata:
+      created_at: datetime
+      updated_at: datetime
+      privacy_level: str
+
+  entity:
+    data:
+      status: str  # active/inactive
+      temperature: float
+      humidity: float
+      devices: List[str]
+      bottles: List[str]
+      measurements: List[Dict]
