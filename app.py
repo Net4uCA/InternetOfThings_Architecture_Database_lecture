@@ -6,6 +6,7 @@ from src.digital_twin.dt_factory import DTFactory
 from src.application.api import register_api_blueprints
 from config.config_loader import ConfigLoader
 from src.application.winery_apis import register_winery_blueprint
+from src.application.mqtt_handler import WineryMQTTHandler
 
 class FlaskServer:
     def __init__(self):
@@ -13,7 +14,13 @@ class FlaskServer:
         CORS(self.app)
         self._init_components()
         self._register_blueprints()
-
+        # Initialize MQTT handler
+        self.app.config['MQTT_CONFIG'] = {
+            'broker': 'broker.mqttdashboard.com',
+            'port': 1883
+        }
+        # Initialize MQTT handler
+        self.mqtt_handler = WineryMQTTHandler(self.app)
     def _init_components(self):
         """Initialize all required components and store them in app config"""
         schema_registry = SchemaRegistry()
@@ -47,11 +54,13 @@ class FlaskServer:
     def run(self, host="0.0.0.0", port=5000, debug=True):
         """Run the Flask server"""
         try:
+            self.mqtt_handler.start()
             self.app.run(host=host, port=port, debug=debug)
         finally:
             # Cleanup on server shutdown
             if "DB_SERVICE" in self.app.config:
                 self.app.config["DB_SERVICE"].disconnect()
+            self.mqtt_handler.stop()
 
 
 if __name__ == "__main__":
