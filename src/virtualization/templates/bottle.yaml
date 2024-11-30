@@ -1,21 +1,61 @@
 schemas:
   common_fields:
-    id: str
-    type: str  # "bottle"
+    _id: str                    # Internal ID for the Digital Replica
+    type: str                   # Type of the DR (wine_bottle)
     profile:
-      name: str
-      description: str
-      rfid_tag: str
+      rfid_tag: str            # RFID identifier of the physical bottle
+      wine_name: str           # Name of the wine
+      wine_producer: str
+      wine_description: str
+      vintage: int             # Production year
+      optimal_temperature: float
+
     metadata:
-      created_at: datetime
-      updated_at: datetime
-      privacy_level: str
+      created_at: datetime     # When the DR was created
+      updated_at: datetime     # Last update timestamp
+      status: str             # Bottle status
 
   entity:
     data:
-      status: str
-      room_id: str
-      optimal_temperature: float
-      measurements: List[Dict]
-      properties: Dict
-      relations: Dict
+      ideal_temp: float        # Ideal storage temperature (Celsius)
+      measurements: List[Dict]  # Current temperature readings
+
+  validations:
+    mandatory_fields:
+      root:
+        - _id
+        - type
+      profile:
+        - wine_name
+        - optimal_temperature
+      metadata:
+        - created_at
+        - updated_at
+        - status
+
+    type_constraints:
+      vintage:
+        type: int
+        min: 1900
+        max: 2024
+      ideal_temp:
+        type: float
+        min: 4.0    # Min storage temp in Celsius
+        max: 20.0   # Max storage temp in Celsius
+      metadata.status:
+        type: str
+        enum: ["stored", "sold", "removed"]
+      measurements:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["timestamp", "temperature"]
+          type_mappings:
+            timestamp: datetime
+            temperature: float
+
+    initialization:
+      profile:
+        rfid_tag: "None"
+      metadata:
+        status: "stored"
+      measurements: []

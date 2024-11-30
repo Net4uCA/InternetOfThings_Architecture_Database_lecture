@@ -1,7 +1,9 @@
-from src.services.base import BaseService
 from typing import Dict, List, Optional
-import math
+from datetime import datetime
+from src.services.base import BaseService
 
+
+# This service should be placed in src/services/temperature_prediction.py
 
 class TemperaturePredictionService(BaseService):
     """Service to predict the best room for a bottle based on temperature requirements"""
@@ -24,61 +26,26 @@ class TemperaturePredictionService(BaseService):
         if not bottle_id:
             raise ValueError("bottle_id is required")
 
-        print("\n=== Debug: TemperaturePredictionService ===")
-        print(f"Looking for bottle_id: {bottle_id}")
-        print(f"Number of digital replicas: {len(data['digital_replicas'])}")
-        print("\nAll Digital Replicas:")
-        for dr in data['digital_replicas']:
-            print(f"Type: {dr.get('type')}, ID: {dr.get('_id')}")
-
         # Get all rooms and the target bottle from digital replicas
         rooms = [dr for dr in data['digital_replicas'] if dr['type'] == 'room']
         bottles = [dr for dr in data['digital_replicas'] if dr['type'] == 'bottle']
 
-        print(f"\nFound {len(rooms)} rooms and {len(bottles)} bottles")
-        print("\nAll Bottles:")
-        for bottle in bottles:
-            print(f"Bottle ID: {bottle.get('_id')}")
+        if not rooms:
+            raise ValueError("No rooms available for analysis")
 
         # Find the target bottle
         target_bottle = next((b for b in bottles if b['_id'] == bottle_id), None)
-
         if not target_bottle:
-            print(f"\nERROR: Bottle {bottle_id} not found in digital replicas!")
-            print("Available bottle IDs:", [b['_id'] for b in bottles])
             raise ValueError(f"Bottle {bottle_id} not found")
 
-        print(f"\nTarget Bottle found:")
-        print(f"Bottle ID: {target_bottle['_id']}")
-        print(f"Bottle Profile: {target_bottle.get('profile', {})}")
-        print(f"Bottle Data: {target_bottle.get('data', {})}")
-
-        # Get optimal temperature for the bottle
-        optimal_temp = target_bottle.get('data', {}).get('optimal_temperature')
-        if optimal_temp is None:
+        # Validate bottle has required data
+        if 'data' not in target_bottle or 'optimal_temperature' not in target_bottle['profile']:
             raise ValueError("Bottle does not have optimal temperature specified")
 
-        print(f"\nOptimal Temperature: {optimal_temp}")
-        print("\nAvailable Rooms:")
-        for room in rooms:
-            print(f"Room {room['_id']}: Temperature = {room.get('data', {}).get('temperature')}")
+        optimal_temp = target_bottle['profile']['optimal_temperature']
 
-        # Calculate scores for each room
-        room_scores = []
-        for room in rooms:
-            current_temp = room.get('data', {}).get('temperature')
-            if current_temp is not None:
-                # Calculate temperature difference (lower is better)
-                temp_diff = abs(current_temp - optimal_temp)
-                score = 1 / (1 + temp_diff)  # Normalize score between 0 and 1
-
-                room_scores.append({
-                    'room_id': room['_id'],
-                    'room_name': room['profile']['name'],
-                    'current_temperature': current_temp,
-                    'temperature_difference': temp_diff,
-                    'score': score
-                })
+        # Calculate weighted scores for each room
+        room_scores = self._calculate_room_scores(rooms, optimal_temp)
 
         # Sort rooms by score (highest first)
         room_scores.sort(key=lambda x: x['score'], reverse=True)
@@ -86,15 +53,93 @@ class TemperaturePredictionService(BaseService):
         # Get best room (if any rooms were scored)
         best_room = room_scores[0] if room_scores else None
 
-        result = {
+        return {
             'bottle_id': bottle_id,
-            'bottle_name': target_bottle['profile']['name'],
+            'bottle_name': target_bottle['profile']['wine_name'],
             'optimal_temperature': optimal_temp,
             'best_room': best_room,
-            'all_room_scores': room_scores
+            'all_room_scores': room_scores,
+            'timestamp': datetime.utcnow().isoformat()
         }
 
-        print("\n=== Result ===")
-        print(result)
+    def _get_latest_temperature(self, room: Dict) -> Optional[float]:
+        """
+        Get the latest temperature measurement from a room
 
-        return result
+        Args:
+            room: Room digital replica
+
+        Returns:
+            Latest temperature value or None if no temperature measurements exist
+        """
+        if 'data' not in room or 'measurements' not in room['data']:
+            return None
+
+        # Filter temperature measurements and sort by timestamp (newest first)
+        temp_measurements = [
+            m for m in room['data']['measurements']
+            if m['measure_type'] == 'temperature'
+        ]
+
+        if not temp_measurements:
+            return None
+
+        # Sort by timestamp and get the latest
+        sorted_measurements = sorted(
+            temp_measurements,
+            key=lambda x: datetime.fromisoformat(x['timestamp'].replace(" GMT", "")) if isinstance(x['timestamp'],
+                                                                                                   str) else x[
+                'timestamp'],
+            reverse=True
+        )
+
+        return sorted_measurements[0]['value']
+
+    def _calculate_room_scores(self, rooms: List[Dict], optimal_temp: float) -> List[Dict]:
+        """
+        Calculate temperature scores for each room
+
+        Args:
+            rooms: List of room digital replicas
+            optimal_temp: Target optimal temperature
+
+        Returns:
+            List of room scores with detailed metrics
+        """
+        room_scores = []
+
+        for room in rooms:
+            # Get the latest temperature measurement
+            current_temp = self._get_latest_temperature(room)
+
+            # Skip rooms without temperature data
+            if current_temp is None:
+                continue
+
+            # Calculate base temperature difference
+            temp_diff = abs(current_temp - optimal_temp)
+
+            # Calculate normalized score (1 is perfect, 0 is worst)
+            # Using exponential decay for more dramatic scoring
+            score = 1 / (1 + temp_diff * 0.5)  # Adjusted multiplier for smoother decay
+
+            # Add occupancy penalty if room is crowded
+            bottles = room.get('data', {}).get('bottles', [])
+            if len(bottles) > 0:
+                occupancy_penalty = min(len(bottles) * 0.1, 0.5)  # Max 50% penalty
+                score *= (1 - occupancy_penalty)
+
+            room_scores.append({
+                'room_id': room['_id'],
+                'room_name': room['profile']['name'],
+                'current_temperature': current_temp,
+                'temperature_difference': round(temp_diff, 2),
+                'score': round(score, 3),
+                'current_occupancy': len(bottles),
+                'metadata': {
+                    'floor': room['profile'].get('floor'),
+                    'last_updated': room['metadata']['updated_at']
+                }
+            })
+
+        return room_scores

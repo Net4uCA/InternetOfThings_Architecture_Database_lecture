@@ -1,22 +1,72 @@
 schemas:
   common_fields:
-    id: str
-    type: str  # "room"
+    _id: str                    # Changed from 'id' to '_id' per guidelines
+    type: str                   # Type identifier for the room
     profile:
-      name: str
-      description: str
-      room_number: str
-      floor: int
+      name: str                 # Room name
+      description: str          # Room description
+      room_number: str          # Room identifier
+      floor: int               # Floor number
     metadata:
-      created_at: datetime
-      updated_at: datetime
-      privacy_level: str
+      created_at: datetime     # Creation timestamp
+      updated_at: datetime     # Last update timestamp
+      privacy_level: str       # Privacy setting
 
   entity:
     data:
-      status: str  # active/inactive
-      temperature: float
-      humidity: float
-      devices: List[str]
-      bottles: List[str]
-      measurements: List[Dict]
+      status: str              # Room operational status
+      temperature: float       # Current temperature
+      humidity: float         # Current humidity
+      devices: List[str]      # List of device IDs in the room
+      bottles: List[str]      # List of bottle IDs in the room
+      measurements: List[Dict] # Historical measurements
+
+  validations:                # Added validations section as required
+    mandatory_fields:
+      root:
+        - _id
+        - type
+      profile:
+        - name
+        - room_number
+        - floor
+      metadata:
+        - created_at
+        - updated_at
+        - privacy_level
+
+    type_constraints:
+      floor:
+        type: int
+        min: -5               # Allowing for basement levels
+        max: 100
+      temperature:
+        type: float
+        min: -10.0
+        max: 50.0
+      humidity:
+        type: float
+        min: 0.0
+        max: 100.0
+      status:
+        type: str
+        enum: ["active", "inactive", "maintenance"]
+      privacy_level:
+        type: str
+        enum: ["public", "private", "restricted"]
+      measurements:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["timestamp", "type", "value"]
+          type_mappings:
+            timestamp: datetime
+            type: str
+            value: float
+
+    initialization:
+      status: "active"
+      devices: []
+      bottles: []
+      measurements: []
+      metadata:
+        privacy_level: "private"
