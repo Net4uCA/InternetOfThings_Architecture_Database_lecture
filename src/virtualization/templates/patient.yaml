@@ -1,0 +1,111 @@
+schemas:
+  common_fields:
+    _id: str
+    type: str
+    profile:
+      first_name: str
+      last_name: str
+      birth_date: datetime
+      gender: str
+      blood_type: str
+      patient_id: str
+      admission_date: datetime
+      emergency_contact: Dict
+    metadata:
+      created_at: datetime
+      updated_at: datetime
+      status: str
+      current_room_id: str
+
+  entity:
+    data:
+      devices: List[Dict]
+      measurements: List[Dict]
+      doctor_visits: List[Dict]
+      medical_history: List[Dict]
+      current_medications: List[Dict]
+
+  validations:
+    mandatory_fields:
+      root:
+        - _id
+        - type
+      profile:
+        - first_name
+        - last_name
+        - patient_id
+        - admission_date
+      metadata:
+        - created_at
+        - updated_at
+        - status
+
+    type_constraints:
+      "profile.gender":
+        type: str
+        enum: ["male", "female", "other"]
+      "profile.blood_type":
+        type: str
+        enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+      "profile.emergency_contact":
+        type: Dict
+        item_constraints:
+          required_fields: ["name", "relationship", "phone"]
+          type_mappings:
+            name: str
+            relationship: str
+            phone: str
+      "metadata.status":
+        type: str
+        enum: ["admitted", "discharged", "critical", "stable"]
+      devices:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["device_id", "type", "status"]
+          type_mappings:
+            device_id: str
+            type: str
+            status: str
+      measurements:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["device_id", "measure_type", "value", "timestamp"]
+          type_mappings:
+            device_id: str
+            measure_type: str
+            value: float
+            timestamp: datetime
+      doctor_visits:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["doctor_id", "timestamp", "notes"]
+          type_mappings:
+            doctor_id: str
+            timestamp: datetime
+            notes: str
+      medical_history:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["condition", "diagnosis_date", "status"]
+          type_mappings:
+            condition: str
+            diagnosis_date: datetime
+            status: str
+      current_medications:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["medication", "dosage", "frequency"]
+          type_mappings:
+            medication: str
+            dosage: str
+            frequency: str
+
+  initialization:
+    metadata:
+      status: "admitted"
+    data:
+      devices: []
+      measurements: []
+      doctor_visits: []
+      medical_history: []
+      current_medications: []

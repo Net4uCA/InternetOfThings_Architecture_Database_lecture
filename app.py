@@ -5,8 +5,9 @@ from src.services.database_service import DatabaseService
 from src.digital_twin.dt_factory import DTFactory
 from src.application.api import register_api_blueprints
 from config.config_loader import ConfigLoader
-from src.application.winery_apis import register_winery_blueprint
-from src.application.mqtt_handler import WineryMQTTHandler
+from src.application.mqtt_handler import HospitalMQTTHandler
+from src.application.e_hospital_apis import register_e_hospital_blueprint
+
 
 class FlaskServer:
     def __init__(self):
@@ -14,18 +15,26 @@ class FlaskServer:
         CORS(self.app)
         self._init_components()
         self._register_blueprints()
-        # Initialize MQTT handler
-        self.app.config['MQTT_CONFIG'] = {
-            'broker': 'broker.mqttdashboard.com',
-            'port': 1883
+
+        # Initialize MQTT config
+        self.app.config["MQTT_CONFIG"] = {
+            "broker": "broker.mqttdashboard.com",
+            "port": 1883,
         }
         # Initialize MQTT handler
-        self.mqtt_handler = WineryMQTTHandler(self.app)
+        self.mqtt_handler = HospitalMQTTHandler(self.app)
+
     def _init_components(self):
         """Initialize all required components and store them in app config"""
         schema_registry = SchemaRegistry()
-        schema_registry.load_schema('bottle','src/virtualization/templates/bottle.yaml')
-        schema_registry.load_schema('room','src/virtualization/templates/room.yaml')
+        schema_registry.load_schema(
+            "patient", "src/virtualization/templates/patient.yaml"
+        )
+        schema_registry.load_schema("room", "src/virtualization/templates/room.yaml")
+        schema_registry.load_schema(
+            "doctor", "src/virtualization/templates/doctor.yaml"
+        )
+
         # Load database configuration
         db_config = ConfigLoader.load_database_config()
         connection_string = ConfigLoader.build_connection_string(db_config)
@@ -49,7 +58,7 @@ class FlaskServer:
     def _register_blueprints(self):
         """Register all API blueprints"""
         register_api_blueprints(self.app)
-        register_winery_blueprint(self.app)
+        register_e_hospital_blueprint(self.app)
 
     def run(self, host="0.0.0.0", port=5000, debug=True):
         """Run the Flask server"""
