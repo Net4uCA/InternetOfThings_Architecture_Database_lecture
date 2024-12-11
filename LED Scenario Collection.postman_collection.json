@@ -1,0 +1,82 @@
+{
+	"info": {
+		"_postman_id": "ef9f3623-07f4-4219-b110-cdb35c386240",
+		"name": "LED Scenario Collection",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "14929618"
+	},
+	"item": [
+		{
+			"name": "NewLED",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Living Room LED\",\r\n  \"location\": \"Living Room\",\r\n  \"description\": \"Main light in living room\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:88/api/led/"
+			},
+			"response": []
+		},
+		{
+			"name": "getDetails",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:88/api/led/47a0c269-5f20-4209-97ea-d360f347941c"
+			},
+			"response": []
+		},
+		{
+			"name": "ToogleLed",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"controlled_by\": \"user123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:88/api/led/47a0c269-5f20-4209-97ea-d360f347941c/toggle"
+			},
+			"response": []
+		},
+		{
+			"name": "create User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"username\": \"mario\",\r\n  \"password\": \"password123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:88/api/user/register"
+			},
+			"response": []
+		},
+		{
+			"name": "Assign LED to User",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": "http://localhost:88/api/user/e47835b0-3a8f-475b-a879-2d75d4dbb416/assign/47a0c269-5f20-4209-97ea-d360f347941c"
+			},
+			"response": []
+		}
+	]
+}

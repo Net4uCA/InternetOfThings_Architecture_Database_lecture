@@ -1,0 +1,64 @@
+schemas:
+  common_fields:
+    _id: str
+    type: str
+    profile:
+      name: str
+      location: str
+      description: str
+    metadata:
+      created_at: datetime
+      updated_at: datetime
+      status: str
+      last_status_change: datetime
+
+  entity:
+    data:
+      state: str
+      brightness: int
+      measurements: List[Dict]
+      controlled_by: str
+
+  validations:
+    mandatory_fields:
+      root:
+        - _id
+        - type
+      profile:
+        - name
+        - location
+      metadata:
+        - created_at
+        - updated_at
+        - status
+
+    type_constraints:
+      metadata.status:
+        type: str
+        enum: ["active", "inactive", "maintenance"]
+      data.state:
+        type: str
+        enum: ["on", "off"]
+      data.brightness:
+        type: int
+        min: 0
+        max: 100
+      data.measurements:
+        type: List[Dict]
+        item_constraints:
+          required_fields: ["type", "value", "timestamp"]
+          type_mappings:
+            type: str
+            value: float
+            timestamp: datetime
+      data.controlled_by:
+        type: str
+
+    initialization:
+      metadata:
+        status: "active"
+      data:
+        state: "off"
+        brightness: 0
+        measurements: []
+        controlled_by: "system"
